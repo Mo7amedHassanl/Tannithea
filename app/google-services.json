@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "firebase_url": "https://tannithea-default-rtdb.firebaseio.com/",
+    "project_number": "261700449090",
+    "firebase_url": "https://tannithea-default-rtdb.firebaseio.com",
     "project_id": "tannithea",
-    "storage_bucket": "tannithea.appspot.com"
+    "storage_bucket": "tannithea.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abc123def456",
+        "mobilesdk_app_id": "1:261700449090:android:8525dac89003d375ba0edb",
         "android_client_info": {
           "package_name": "com.m7md7sn.tannithea"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "placeholder-api-key"
+          "current_key": "AIzaSyByoX4q-Gczu2MMMeNc9VStufKCsNUqgpQ"
         }
       ],
       "services": {
@@ -27,4 +27,4 @@
     }
   ],
   "configuration_version": "1"
-} 
+}

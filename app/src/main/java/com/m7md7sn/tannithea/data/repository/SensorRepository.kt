@@ -231,4 +231,13 @@ class SensorRepository @Inject constructor(
         tds < 50f -> "Low"
         else -> "Normal"
     }
+
+    // --- Pump state support ---
+    fun getPumpStatesFlow() = firebaseRepository.getPumpStatesFlow()
+    fun setPumpState(index: Int, state: Boolean) = firebaseRepository.setPumpState(index, state)
+    fun setAllPumps(state: Boolean) = firebaseRepository.setAllPumps(state)
+
+    // --- Schedule control support ---
+    fun getScheduleStatusFlow() = firebaseRepository.getScheduleStatusFlow()
+    fun setScheduleCommand(command: String) = firebaseRepository.setScheduleCommand(command)
 } 

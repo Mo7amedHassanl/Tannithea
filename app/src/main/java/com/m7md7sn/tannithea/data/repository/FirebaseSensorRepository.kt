@@ -15,6 +15,8 @@ import javax.inject.Singleton
 class FirebaseSensorRepository @Inject constructor() {
     private val database = FirebaseDatabase.getInstance()
     private val sensorDataRef = database.getReference("sensor_data")
+    private val pumpsRef = database.getReference("pumps")
+    private val scheduleControlRef = database.getReference("schedule_control")
     
     /**
      * Get a flow of the latest sensor data from Firebase
@@ -74,5 +76,82 @@ class FirebaseSensorRepository @Inject constructor() {
         awaitClose {
             sensorDataRef.removeEventListener(valueEventListener)
         }
+    }
+
+    /**
+     * Get a flow of the latest pump states from Firebase
+     */
+    fun getPumpStatesFlow(): Flow<List<Boolean>> = callbackFlow {
+        val valueEventListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val pumpStates = MutableList(7) { false }
+                for (i in 0..6) {
+                    val value = snapshot.child(i.toString()).getValue(Int::class.java) ?: 0
+                    pumpStates[i] = value == 1
+                }
+                trySend(pumpStates).isSuccess
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        pumpsRef.addValueEventListener(valueEventListener)
+        awaitClose { pumpsRef.removeEventListener(valueEventListener) }
+    }
+
+    /**
+     * Set the state of a specific pump in Firebase
+     */
+    fun setPumpState(index: Int, state: Boolean) {
+        pumpsRef.child(index.toString()).setValue(if (state) 1 else 0)
+    }
+
+    /**
+     * Set all pumps to a specific state in Firebase
+     */
+    fun setAllPumps(state: Boolean) {
+        val updates = (0..6).associate { it.toString() to if (state) 1 else 0 }
+        pumpsRef.updateChildren(updates)
+    }
+
+    /**
+     * Get a flow of the current schedule status from Firebase
+     */
+    fun getScheduleStatusFlow(): Flow<String> = callbackFlow {
+        val valueEventListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val status = snapshot.child("status").getValue(String::class.java) ?: "stopped"
+                trySend(status).isSuccess
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        scheduleControlRef.addValueEventListener(valueEventListener)
+        awaitClose { scheduleControlRef.removeEventListener(valueEventListener) }
+    }
+
+    /**
+     * Send a schedule control command to Firebase
+     */
+    fun setScheduleCommand(command: String) {
+        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        
+        val status = when (command) {
+            "start" -> "running"
+            "stop" -> "stopped"
+            "pause" -> "paused"
+            "resume" -> "running"
+            else -> "unknown"
+        }
+        
+        val updates = mapOf(
+            "command" to command,
+            "status" to status,
+            "last_updated" to timestamp
+        )
+        
+        scheduleControlRef.updateChildren(updates)
     }
 } 
